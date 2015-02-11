@@ -13,7 +13,7 @@ uguu~
 ```
 
 ## Dependencies
-You need to have [curl](curl.haxx.se) installed to use uguupload.
+You need to have [curl](curl.haxx.se) and [Rust](http://rust-lang.org) installed to use uguupload.
 
 Your package manager (99% sure) has curl. I recommend installing it that way :>.
 
