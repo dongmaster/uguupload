@@ -29,9 +29,7 @@ If you want to know how to use this program, use the --help flag (./uguupload --
     }
     
     if args[1] == "--help" {
-        println!("Uguupload - A program for uploading files to http://uguu.se
-
-Usage: ./uguupload [options] [FILE]
+        println!("Usage: ./uguupload [options] [FILE]
 
 [FILENAME] is the name you want for the file.
 [FILE] is the path to the file you want to upload.
@@ -62,8 +60,10 @@ EXAMPLES
         ./uguupload -f [FILENAME] [FILE]");
 
         return;
-    } else if args[1] == "-f" || args[1] == "--filenames" {
+    } else if args[1] == "-f" || args[1] == "--filename" {
         upload_files_filenames(upload_url, args, args_len, counter);
+    } else if args[1] == "-r" || args[1] == "--random" {
+        upload_files_random_filenames(upload_url, args, args_len, counter);
     } else {
         upload_files(upload_url, args, args_len, counter);
     }
@@ -123,5 +123,32 @@ fn upload_files_filenames(upload_url: &str, args: Vec<String>, args_len: usize, 
         }
         
         counter += 1;
+    }
+}
+
+fn upload_files_random_filenames(upload_url: &str, args: Vec<String>, args_len: usize, counter: usize) {    
+    for x in range(2, args_len) {
+        // Checking stuff so we don't go out of the index.
+        if x + counter < args_len {
+            let filename = format!("name={}", args[x + counter]);
+            let file = format!("file=@{}", args[x + counter]);
+            
+            let mut curl = old_io::Command::new("curl");
+                curl.args(&["-F", filename.as_slice()]);
+                curl.args(&["-F", file.as_slice()]);
+                curl.args(&["-F", "randomname=true"]);
+                curl.arg(upload_url);
+            
+            match curl.output() {
+                Ok(r)   => {
+                    if String::from_utf8_lossy(r.output.as_slice()) == "" {
+                        println!("Failed to upload: {}", args[x + counter]);
+                    } else {
+                        println!("\nSuccessfully uploaded {}\n{}", args[x + counter], String::from_utf8_lossy(r.output.as_slice()));
+                    }
+                },
+                Err(e)  => panic!("Failed to upload: {}", e),
+            }
+        }
     }
 }
