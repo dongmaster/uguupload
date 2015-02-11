@@ -5,7 +5,7 @@ It is possible to upload several files at once. See usage section.
 
 Bug reports are very welcome. Same with suggestions.
 
-If you don't want to compile this program yourself, you can download binaries here: https://github.com/dongmaster/uguupload/releases
+If you don't want to compile the program, you can download binaries here: https://github.com/dongmaster/uguupload/releases
 (Windows 64-bit and Linux 64-bit only available at the moment)
 
 uguu~
