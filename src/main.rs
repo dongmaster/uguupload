@@ -10,12 +10,7 @@ fn main() {
     let upload_url = "http://uguu.se/api.php?d=upload";
     let shitty_args = env::args();
     let mut args = Vec::new();
-    let mut counter = 0;
-    // I use this to get the file.
-    // If this is 0, then the filename will be the name of the file
-    let mut file_index = 0;
-    let mut start_index = 1;
-    let mut if_index = 0;
+    let counter: usize = 0;
     
     // I want to be able to index arguments so I push them to a vector.
     for x in shitty_args {
@@ -26,10 +21,10 @@ fn main() {
     }
     
     // Efficiency?
-    let args_len = args.len();
+    let args_len: usize = args.len();
     
     if args_len < 2 {
-        panic!("\n\nYou fucked up! Not enough arguments were supplied.
+        panic!("\n\nYou fucked up. Not enough arguments were supplied.
 If you want to know how to use this program, use the --help flag (./uguupload --help)\n\n");
     }
     
@@ -68,20 +63,19 @@ EXAMPLES
 
         return;
     } else if args[1] == "-f" || args[1] == "--filenames" {
-        // Getting this to work can most likely be done in a better way.
-        file_index = 1;
-        start_index = 2;
-        if_index = 1;
-    } else if args_len == 2 {
-        panic!("\n\nYou fucked up! Not enough arguments were supplied.
-If you want to know how to use this program, use the --help flag (./uguupload --help)\n\n");
+        upload_files_filenames(upload_url, args, args_len, counter);
+    } else {
+        upload_files(upload_url, args, args_len, counter);
     }
-    
-    for x in range(start_index, args_len) {
+}
+
+// Upload files where the name of the file is the filename.
+fn upload_files(upload_url: &str, args: Vec<String>, args_len: usize, counter: usize) {
+    for x in range(1, args_len) {
         // Checking stuff so we don't go out of the index.
-        if x + if_index + counter < args_len {
+        if x + counter < args_len {
             let filename = format!("name={}", args[x + counter]);
-            let file = format!("file=@{}", args[x + file_index + counter]);
+            let file = format!("file=@{}", args[x + counter]);
             
             let mut curl = old_io::Command::new("curl");
                 curl.args(&["-F", filename.as_slice()]);
@@ -91,22 +85,43 @@ If you want to know how to use this program, use the --help flag (./uguupload --
             match curl.output() {
                 Ok(r)   => {
                     if String::from_utf8_lossy(r.output.as_slice()) == "" {
-                        if file_index == 1 {
-                            println!("Upload failed! {}:{} (filename:file) didn't upload successfully.", args[x + counter], args[x + file_index + counter]);
-                        } else {
-                            println!("Upload failed! {} didn't upload successfully.", args[x + file_index + counter]);
-                        }
+                        println!("Failed to upload: {}", args[x + counter]);
                     } else {
-                        println!("Looks like your shitty file was uploaded. Here's the link to your file: {}", String::from_utf8_lossy(r.output.as_slice()));
+                        println!("\nSuccessfully uploaded {}\n{}", args[x + counter], String::from_utf8_lossy(r.output.as_slice()));
                     }
                 },
-                Err(e)  => panic!("failed to upload the file: {}", e),
+                Err(e)  => panic!("Failed to upload: {}", e),
             }
-        
+        }
+    }
+}
+
+//Upload files with user-specified filenames
+fn upload_files_filenames(upload_url: &str, args: Vec<String>, args_len: usize, mut counter: usize) {
+    // The index starts at two (2) because of the flag
+    for x in range(2, args_len) {
+        // Checking stuff so we don't go out of the index.
+        if x + 1 + counter < args_len {
+            let filename = format!("name={}", args[x + counter]);
+            let file = format!("file=@{}", args[x + 1 + counter]);
+            
+            let mut curl = old_io::Command::new("curl");
+                curl.args(&["-F", filename.as_slice()]);
+                curl.args(&["-F", file.as_slice()]);
+                curl.arg(upload_url);
+            
+            match curl.output() {
+                Ok(r)   => {
+                    if String::from_utf8_lossy(r.output.as_slice()) == "" {
+                        println!("Failed to upload {}:{} (filename:file)", args[x + counter], args[x + 1 + counter]);
+                    } else {
+                        println!("\nSuccessfully uploaded {}:{} (filename:file)\n{}", args[x + counter], args[x + 1 + counter], String::from_utf8_lossy(r.output.as_slice()));
+                    }
+                },
+                Err(e)  => panic!("Failed to upload: {}", e),
+            }
         }
         
-        if file_index == 1 {
-            counter += 1;
-        }
+        counter += 1;
     }
 }
