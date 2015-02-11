@@ -1,5 +1,5 @@
 # Uguupload
-Uguupload is a program that allows you to upload files to http://uguu.se using the command-line ("Using the command-line". Is there a better way to say it?).
+Uguupload is a program that allows you to upload files to http://uguu.se using the CLI.
 
 It is possible to upload several files at once. See usage section.
 
