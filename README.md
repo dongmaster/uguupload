@@ -18,7 +18,7 @@ You need to have [curl](curl.haxx.se) installed to use uguupload.
 Your package manager (99% sure) has curl. I recommend installing it that way :>.
 
 ## Compiling
-You need to have [Rust](http://rust-lang.org) installed to compile this. I assume you have cargo installed as well (If you do not, don't worry, you should just be able to do ```rustc main.rs``` and it should compile).
+You need to have [Rust](http://rust-lang.org) installed to compile this. I assume you have cargo installed as well (If you don't, you should just be able to do ```rustc main.rs``` and it should compile).
 
 ```
 git clone https://github.com/dongmaster/uguupload && cd uguupload && cargo build
