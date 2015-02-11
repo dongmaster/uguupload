@@ -31,33 +31,37 @@ If you want to know how to use this program, use the --help flag (./uguupload --
     if args[1] == "--help" {
         println!("Usage: ./uguupload [options] [FILE]
 
-[FILENAME] is the name you want for the file.
 [FILE] is the path to the file you want to upload.
-
-Uploading several files at once is possible. See Example 2 below.
 
 OPTIONS
     -f, --filenames
         Allows you to specify filenames for files.
+        See Example 2.
+    
+    -r, --random
+        Gives you random filenames.
         See Example 3.
 
 EXAMPLES
     Example 1:
+        ./uguupload [FILE]
         ./uguupload foo.txt
-        This will return http://a.uguu.se/sdfyse_[FILE]
+        
+        You can also upload several files.
+        ./uguupload foo.txt bar.txt foobar.txt
 
     Example 2:
-        ./uguupload foo.txt bar.txt foobar.txt
-        This will return three (3) files
-
-    Example 3:
+        ./uguupload -f [FILENAME] [FILE]
         ./uguupload -f foo.txt foo.txt bar.txt foo.txt foobar.txt foo.txt
         
         The first argument, foo.txt is the filename and the second argument, foo.txt, is the file and so on.
         bar.txt is the filename and foo.txt is the file. Same for foobar.txt and foo.txt
         
-        Syntax in other words:
-        ./uguupload -f [FILENAME] [FILE]");
+    Example 3:
+        ./uguupload -r [FILE]
+        ./uguupload -r foo.txt
+        
+        This will return http://a.uguu.se/asdfghjkl.ext where .ext is the file extension/type");
 
         return;
     } else if args[1] == "-f" || args[1] == "--filename" {

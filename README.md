@@ -41,4 +41,6 @@ Can the --help message be improved?
 
 Maybe show a progress bar for uploads? Not sure how to do that though.
 
+Stop sending unnecessary requests to uguu (if you try to upload a file that doesn't exist, a request will still be sent).
+
 
