@@ -10,6 +10,9 @@ If you don't want to compile the program, you can download binaries here: https:
 
 uguu~
 
+![uguu]
+(http://i.imgur.com/LRhtsze.jpg)
+
 ## Usage
 ```
 ./uguupload --help
