@@ -14,8 +14,51 @@ uguu~
 (http://i.imgur.com/LRhtsze.jpg)
 
 ## Usage
+(This help message may or may not be up-to-date.)
+(To get the absolutely latest help message: ```./uguupload --help```)
+
 ```
-./uguupload --help
+Usage: ./uguupload [options] [FILE]
+
+[FILE] is the path to the file you want to upload.
+
+OPTIONS
+    -f, --filenames
+        Allows you to specify filenames for files.
+        See Example 2.
+    
+    -r, --random
+        Gives you random filenames.
+        See Example 3.
+        
+    -R, --recursive
+        Uploads everything in a directory.
+        See Example 4.
+
+EXAMPLES
+    Example 1:
+        ./uguupload [FILE]
+        ./uguupload foo.txt
+        
+        You can also upload several files.
+        ./uguupload foo.txt bar.txt foobar.txt
+
+    Example 2:
+        ./uguupload -f [FILENAME] [FILE]
+        ./uguupload -f foo.txt foo.txt bar.txt foo.txt foobar.txt foo.txt
+        
+        The first argument, foo.txt is the filename and the second argument, foo.txt, is the file and so on.
+        bar.txt is the filename and foo.txt is the file. Same for foobar.txt and foo.txt
+        
+    Example 3:
+        ./uguupload -r [FILE]
+        ./uguupload -r foo.txt
+        
+        This will return http://a.uguu.se/asdfghjkl.ext where .ext is the file extension/type
+        
+    Example 4:
+        ./uguupload -R [DIRECTORY]
+        This will upload everything in a specified directory. You can add several directories
 ```
 
 ## Dependencies
