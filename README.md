@@ -15,7 +15,7 @@ uguu~
 
 ## Usage
 (This help message may or may not be up-to-date.)
-(To get the absolutely latest help message: ```./uguupload --help```)
+```./uguupload --help```
 
 ```
 Usage: ./uguupload [options] [FILE]
@@ -58,7 +58,7 @@ EXAMPLES
         
     Example 4:
         ./uguupload -R [DIRECTORY]
-        This will upload everything in a specified directory. You can add several directories
+        This will upload everything in the specified directory. You can add several directories
 ```
 
 ## Dependencies
@@ -74,7 +74,7 @@ git clone https://github.com/dongmaster/uguupload && cd uguupload && cargo build
 ```
 
 ## Supported platforms
-If you can install curl and rust on your system, you can use this.
+If you can install curl (and rust, if you are compiling uguupload) on your system, you can use this.
 This has been tested on:
 * Windows 7 64-bit
 * Linux 64-bit

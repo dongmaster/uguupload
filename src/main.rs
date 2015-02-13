@@ -71,7 +71,8 @@ EXAMPLES
         This will return http://a.uguu.se/asdfghjkl.ext where .ext is the file extension/type
         
     Example 4:
-        ./uguupload -R [DIRECTORY]");
+        ./uguupload -R [DIRECTORY]
+        This will upload everything in the specified directory. You can add several directories");
 
         return;
     } else if args[1] == "-f" || args[1] == "--filename" {
