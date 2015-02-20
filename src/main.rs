@@ -1,8 +1,7 @@
 #![feature(env)]
 #![feature(core)]
-#![feature(io)]
-#![feature(os)]
-#![feature(path)]
+#![feature(old_io)]
+#![feature(old_path)]
 
 use std::env;
 use std::old_io;
@@ -17,10 +16,13 @@ fn main() {
     
     // I want to be able to index arguments so I push them to a vector.
     for x in shitty_args {
+        /*
         match x.into_string() {
             Ok(r)   => args.push(r),
             Err(e)  => panic!("Something went wrong. It has something to do with command-line arguments. Error: {:?}", e),
         }
+        * */
+        args.push(x);
     }
     
     // Efficiency?
