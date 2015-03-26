@@ -1,3 +1,10 @@
+/*  
+ *  This source code is subject to the terms of the 2-clause BSD license (FreeBSD License).
+ *  If a copy of the 2-clause BSD license was not included with this file, 
+ *  you can refer to http://en.wikipedia.org/wiki/BSD_licenses#2-clause_license_.28.22Simplified_BSD_License.22_or_.22FreeBSD_License.22.29 
+ *  or http://opensource.org/licenses/BSD-2-Clause
+ * */
+
 #![feature(env)]
 #![feature(core)]
 #![feature(old_io)]
