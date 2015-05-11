@@ -8,37 +8,95 @@
 #![feature(fs_walk)]
 #![feature(path_ext)]
 
+extern crate rustc_serialize;
+
 use std::env;
 use std::process;
 use std::fs;
 use std::path::Path;
 use std::fs::PathExt;
+use std::fs::File;
+use std::io::Write;
+use std::io::Read;
+
+use rustc_serialize::json;
 
 const URL : &'static str = "http://uguu.se/api.php?d=upload";
+
+#[derive(RustcDecodable, RustcEncodable)]
+pub struct Config {
+    links: bool,
+}
 
 fn main() {
     let args: Vec<_> = env::args().collect();
     
-    handle_arguments(args);
+    let config = first_run();
+    
+    if args.len() == 1 {
+        panic!("\n\n    Not enough arguments were supplied!\n\n")
+    }
+    
+    handle_arguments(args, config);
 }
 
-fn handle_arguments(args: Vec<String>) {
+fn first_run() -> Config {
+    let home = env::home_dir().unwrap();
+    let home_dir = Path::new(&home);
+    
+    let config_dir = home_dir.join(".uguupload");
+    let config_dir_path = Path::new(&config_dir);
+    
+    let config_file = config_dir.join("uguuconfig");
+    
+    if config_dir_path.is_dir() == false {
+        // Create the initial config file
+        match fs::create_dir(config_dir_path) {
+            Ok(_)   => (),
+            Err(e)  => panic!("Failed to create ~/.uguupload! Error: {}", e),
+        }
+        
+        let default_config = Config {
+            links: false,
+        };
+        
+        let config_file = File::create(config_dir_path.join("uguuconfig"));
+        
+        config_file.unwrap().write_all(json::encode(&default_config).unwrap().as_bytes());
+    }
+    
+    // Load the config file
+    let mut boop = File::open(&config_file).unwrap();
+    let mut output_from_config = "".to_string();
+    
+    let content = match File::read_to_string(&mut boop, &mut output_from_config) {
+        Ok(o)   => o,
+        Err(e)  => panic!("HELP: {}", e),
+    };
+    
+    let current_config: Config = json::decode(&output_from_config).unwrap();
+    
+    return current_config;
+}
+
+fn handle_arguments(args: Vec<String>, config: Config) {
     // Handles command-line arguments
 
     let arg = args[1].clone();
 
     match arg.as_ref() {
-        "-h" | "--help"     => help(),
-        "-f" | "--filename" => upload_f(args),
-        "-r" | "--random"   => upload_r(args),
-        "-d" | "--dir"      => upload_d(args),
-        "-dr" | "--dir-rec" => upload_dr(args),
-        _                   => upload_n(args),
+        "-h"  | "--help"        => help(),
+        "-f"  | "--filename"    => upload_f(args, config),
+        "-r"  | "--random"      => upload_r(args, config),
+        "-d"  | "--dir"         => upload_d(args, config),
+        "-dr" | "--dir-rec"     => upload_dr(args, config),
+        _                       => upload_n(args, config),
     }
 }
 
-fn upload(f: &String, file: String, filename: String, random: bool) {
+fn upload(f: &String, file: String, filename: String, random: bool, config: &Config) {
     // Handles the uploading of files.
+    
     let mut curl = process::Command::new("curl");
             curl.args(&["-F", filename.as_ref()]);
             curl.args(&["-F", file.as_ref()]);
@@ -52,27 +110,32 @@ fn upload(f: &String, file: String, filename: String, random: bool) {
             if String::from_utf8_lossy(r.stdout.as_ref()) == "" {
                 println!("Failed to upload: {}", f);
             } else {
-                println!("{}\n{}", f, String::from_utf8_lossy(r.stdout.as_ref()));
+                if config.links == true {
+                    println!("{}", String::from_utf8_lossy(r.stdout.as_ref()));
+                } else {
+                    println!("{}\n{}", f, String::from_utf8_lossy(r.stdout.as_ref()));
+                }
             }
         },
         Err(e)  => panic!("Failed to upload: {}", e),
     }
 }
 
-fn upload_n(args: Vec<String>) {
+fn upload_n(args: Vec<String>, config: Config) {
     // NORMAL
     // Handles what files should be uploaded along with what filename the file should have.
+    
     let files = &args[1..args.len()];
     
     for f in files {
         let filename = format!("name={}", f);
         let file = format!("file=@{}", f);
         
-        upload(f, file, filename, false);
+        upload(f, file, filename, false, &config);
     }
 }
 
-fn upload_f(args: Vec<String>) {
+fn upload_f(args: Vec<String>, config: Config) {
     // FILENAME
     // Handles what files should be uploaded along with that filename the file should have.
     // -f was used here.
@@ -84,14 +147,14 @@ fn upload_f(args: Vec<String>) {
             let filename = format!("name={}", files[x + 1 + counter]);
             let file = format!("file=@{}", files[x + counter]);
             
-            upload(&files[x + counter], file, filename, false);
+            upload(&files[x + counter], file, filename, false, &config);
         }
         
         counter += 1;
     }
 }
 
-fn upload_r(args: Vec<String>) {
+fn upload_r(args: Vec<String>, config: Config) {
     // RANDOM
     // Handles what files should be uploaded. Filenames are random.
     // -r was used here
@@ -101,11 +164,11 @@ fn upload_r(args: Vec<String>) {
         let filename = format!("name={}", f);
         let file = format!("file=@{}", f);
         
-        upload(f, file, filename, true);
+        upload(f, file, filename, true, &config);
     }
 }
 
-fn upload_d(args: Vec<String>) {
+fn upload_d(args: Vec<String>, config: Config) {
     // DIRECTORY
     // Handles what files in the directory should be uploaded.
     // -d was used here.
@@ -131,13 +194,13 @@ fn upload_d(args: Vec<String>) {
                 let filename = format!("name={}", filename_processed);
                 let file = format!("file=@{}", file_processed);
                 
-                upload(&file_processed, file, filename, false);
+                upload(&file_processed, file, filename, false, &config);
             }
         }
     }
 }
 
-fn upload_dr(args: Vec<String>) {
+fn upload_dr(args: Vec<String>, config: Config) {
     // DIRECTORY
     // Handles what files in the directory should be uploaded.
     // -d was used here.
@@ -163,7 +226,7 @@ fn upload_dr(args: Vec<String>) {
                 let filename = format!("name={}", filename_processed);
                 let file = format!("file=@{}", file_processed);
                 
-                upload(&file_processed, file, filename, false);
+                upload(&file_processed, file, filename, false, &config);
             }
         }
     }

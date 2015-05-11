@@ -67,7 +67,24 @@ EXAMPLES
     Example 4:
         ./uguupload -d [DIRECTORY]
         This will upload everything in the specified directory. You can add several directories
+        
+CONFIGURATION
+    links_only:
+        Boolean. This can be either true or false. Nothing else.
+        
+        If true, only links will be outputted, no filename.
+        If false, the filename and the uguu.se link will outputted.
+        
+        Default is false.
 ```
+
+## Configuration
+You can now configure the program to change the output.
+The config file is located in your home folder/.uguupload/config
+
+In the config file you will be able to change one (at the moment) option.
+
+The help section in the program explains what each option does.
 
 ## Dependencies
 You need to have [curl](http://curl.haxx.se) installed to use uguupload.
@@ -76,6 +93,8 @@ Your package manager (99% sure) has curl. I recommend installing it that way :>.
 
 ## Compiling
 You need to have [Rust](http://rust-lang.org) installed to compile this. I assume you have cargo installed as well (If you don't, you should just be able to do ```rustc main.rs``` and it should compile).
+
+You need the latest nightly of rust
 
 ```
 git clone https://github.com/dongmaster/uguupload && cd uguupload && cargo build --release
