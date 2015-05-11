@@ -18,6 +18,7 @@ use std::fs::PathExt;
 use std::fs::File;
 use std::io::Write;
 use std::io::Read;
+use std::str::FromStr;
 
 use rustc_serialize::json;
 
@@ -50,7 +51,7 @@ fn first_run() -> Config {
     let config_file = config_dir.join("config");
     
     if config_dir_path.is_dir() == false {
-        // Create the initial config file
+        // Create the initial config directory and then the config file
         match fs::create_dir(config_dir_path) {
             Ok(_)   => (),
             Err(e)  => panic!("Failed to create ~/.uguupload! Error: {}", e),
@@ -60,23 +61,10 @@ fn first_run() -> Config {
             links_only: false,
         };
         
-        let conf_file = File::create(&config_file);
-        
-        conf_file.unwrap().write_all(json::encode(&default_config).unwrap().as_bytes());
+        save_config(default_config);
     }
     
-    // Load the config file
-    let mut boop = File::open(&config_file).unwrap();
-    let mut output_from_config = "".to_string();
-    
-    let content = match File::read_to_string(&mut boop, &mut output_from_config) {
-        Ok(o)   => o,
-        Err(e)  => panic!("HELP: {}", e),
-    };
-    
-    let current_config: Config = json::decode(&output_from_config).unwrap();
-    
-    return current_config;
+    return load_config();
 }
 
 fn handle_arguments(args: Vec<String>, config: Config) {
@@ -90,8 +78,74 @@ fn handle_arguments(args: Vec<String>, config: Config) {
         "-r"  | "--random"      => upload_r(args, config),
         "-d"  | "--dir"         => upload_d(args, config),
         "-dr" | "--dir-rec"     => upload_dr(args, config),
+        "-c"  | "--config"      => change_config(&args),
+        "-lc" | "--list-config" => list_config(),
         _                       => upload_n(args, config),
     }
+}
+
+fn change_config(args: &Vec<String>) {
+    if args.len() != 4 {
+        panic!("Too many or too little arguments were supplied!");
+    }
+    
+    let ref config_parameter = args[2];
+    let ref config_value = args[3];
+    
+    let mut current_config: Config = load_config();
+    
+    let links_only = "links_only".to_string();
+    
+    match config_value {
+        links_only  => current_config.links_only = match FromStr::from_str(config_value.as_ref()) {
+            Ok(o)   => o,
+            Err(e)  => panic!("HELP: {}", e),
+        },
+    }
+    
+    save_config(current_config);
+}
+
+fn load_config() -> Config {
+    let home = env::home_dir().unwrap();
+    let home_dir = Path::new(&home);
+    
+    let config_dir = home_dir.join(".uguupload");
+    
+    let config_file = config_dir.join("config");
+    
+    let mut boop = File::open(&config_file).unwrap();
+    let mut output_from_config = "".to_string();
+    
+    let content = match File::read_to_string(&mut boop, &mut output_from_config) {
+        Ok(o)   => o,
+        Err(e)  => panic!("HELP: {}", e),
+    };
+    
+    let current_config: Config = json::decode(&output_from_config).unwrap();
+    
+    return current_config;
+}
+
+fn save_config(new_config: Config) {
+    let home = env::home_dir().unwrap();
+    let home_dir = Path::new(&home);
+    
+    let config_dir = home_dir.join(".uguupload");
+    
+    let config_file = config_dir.join("config");
+
+    let conf_file = File::create(&config_file);
+
+    conf_file.unwrap().write_all(json::encode(&new_config).unwrap().as_bytes());
+}
+
+fn list_config() {
+    // This is really shitty.
+    // Use the serde crate to do this in a better way.
+    let config: Config = load_config();
+    
+    println!("links_only : {}", config.links_only);
 }
 
 fn upload(f: &String, file: String, filename: String, random: bool, config: &Config) {
@@ -258,6 +312,13 @@ OPTIONS
         Uploads everything in the specified directory.
         This is recursive. Files in sub-directories will be uploaded.
         See Example 4. This works exactly like -d.
+        
+    -c, --config
+        Changes config values
+        See Example 5
+        
+    -lc, --list-config
+        Lists config options
 
 EXAMPLES
     Example 1:
@@ -283,6 +344,11 @@ EXAMPLES
     Example 4:
         ./uguupload -d [DIRECTORY]
         This will upload everything in the specified directory. You can add several directories
+        
+    Example 5:
+        ./uguupload -c [PARAMETER] [VALUE]
+        ./uguupload -c links_only true
+        This will change the config option links_only to true.
         
 CONFIGURATION
     links_only:

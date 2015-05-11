@@ -42,6 +42,13 @@ OPTIONS
         Uploads everything in the specified directory.
         This is recursive. Files in sub-directories will be uploaded.
         See Example 4. This works exactly like -d.
+        
+    -c, --config
+        Changes config values
+        See Example 5
+        
+    -lc, --list-config
+        Lists config options
 
 EXAMPLES
     Example 1:
@@ -68,9 +75,14 @@ EXAMPLES
         ./uguupload -d [DIRECTORY]
         This will upload everything in the specified directory. You can add several directories
         
+    Example 5:
+        ./uguupload -c [PARAMETER] [VALUE]
+        ./uguupload -c links_only true
+        This will change the config option links_only to true.
+        
 CONFIGURATION
     links_only:
-        Boolean. This can be either true or false. Nothing else.
+        Type: boolean. This can be either true or false. Nothing else.
         
         If true, only links will be outputted, no filename.
         If false, the filename and the uguu.se link will outputted.

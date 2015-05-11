@@ -1,7 +1,7 @@
 [package]
 
 name = "uguupload"
-version = "0.8.0"
+version = "0.9.5"
 authors = ["Dongmaster <dongmaster@users.noreply.github.com>"]
 
 [dependencies.rustc-serialize]
