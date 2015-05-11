@@ -25,7 +25,7 @@ const URL : &'static str = "http://uguu.se/api.php?d=upload";
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
-    links: bool,
+    links_only: bool,
 }
 
 fn main() {
@@ -47,7 +47,7 @@ fn first_run() -> Config {
     let config_dir = home_dir.join(".uguupload");
     let config_dir_path = Path::new(&config_dir);
     
-    let config_file = config_dir.join("uguuconfig");
+    let config_file = config_dir.join("config");
     
     if config_dir_path.is_dir() == false {
         // Create the initial config file
@@ -57,12 +57,12 @@ fn first_run() -> Config {
         }
         
         let default_config = Config {
-            links: false,
+            links_only: false,
         };
         
-        let config_file = File::create(config_dir_path.join("uguuconfig"));
+        let conf_file = File::create(&config_file);
         
-        config_file.unwrap().write_all(json::encode(&default_config).unwrap().as_bytes());
+        conf_file.unwrap().write_all(json::encode(&default_config).unwrap().as_bytes());
     }
     
     // Load the config file
@@ -110,7 +110,7 @@ fn upload(f: &String, file: String, filename: String, random: bool, config: &Con
             if String::from_utf8_lossy(r.stdout.as_ref()) == "" {
                 println!("Failed to upload: {}", f);
             } else {
-                if config.links == true {
+                if config.links_only == true {
                     println!("{}", String::from_utf8_lossy(r.stdout.as_ref()));
                 } else {
                     println!("{}\n{}", f, String::from_utf8_lossy(r.stdout.as_ref()));
@@ -282,7 +282,16 @@ EXAMPLES
         
     Example 4:
         ./uguupload -d [DIRECTORY]
-        This will upload everything in the specified directory. You can add several directories");
+        This will upload everything in the specified directory. You can add several directories
+        
+CONFIGURATION
+    links_only:
+        Type: boolean. This can be either true or false. Nothing else.
+        
+        If true, only links will be outputted, no filename.
+        If false, the filename and the uguu.se link will outputted.
+        
+        Default is false.");
         
     return;
 }
