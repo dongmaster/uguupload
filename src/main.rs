@@ -122,7 +122,7 @@ fn load_config() -> Config {
         Err(e)  => panic!("HELP: {}", e),
     };
 
-    json::decode::<Config>(&output_from_config).unwrap();
+    json::decode::<Config>(&output_from_config).unwrap()
 }
 
 fn save_config(new_config: Config) {
