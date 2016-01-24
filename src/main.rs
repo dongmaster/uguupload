@@ -5,16 +5,14 @@
  *  or http://opensource.org/licenses/BSD-2-Clause
  * */
 
-#![feature(fs_walk)]
-#![feature(path_ext)]
 
 extern crate rustc_serialize;
+extern crate walkdir;
 
 use std::env;
 use std::process;
 use std::fs;
 use std::path::Path;
-use std::fs::PathExt;
 use std::fs::File;
 use std::io::Write;
 use std::io::Read;
@@ -22,7 +20,9 @@ use std::str::FromStr;
 
 use rustc_serialize::json;
 
-const URL : &'static str = "http://uguu.se/api.php?d=upload";
+use walkdir::WalkDir;
+
+const URL: &'static str = "https://uguu.se/api.php?d=upload-tool";
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
@@ -30,7 +30,7 @@ pub struct Config {
 }
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
     let config = first_run();
 
@@ -47,8 +47,6 @@ fn first_run() -> Config {
 
     let config_dir = home_dir.join(".uguupload");
     let config_dir_path = Path::new(&config_dir);
-
-    let config_file = config_dir.join("config");
 
     if config_dir_path.is_dir() == false {
         // Create the initial config directory and then the config file
@@ -89,19 +87,16 @@ fn change_config(args: &Vec<String>) {
         panic!("Too many or too little arguments were supplied!");
     }
 
-    let ref config_parameter = args[2];
+    // args[2] is not needed
+
     let ref config_value = args[3];
 
     let mut current_config: Config = load_config();
 
-    let links_only = "links_only".to_string();
-
-    match config_value {
-        links_only  => current_config.links_only = match FromStr::from_str(config_value.as_ref()) {
-            Ok(o)   => o,
-            Err(e)  => panic!("HELP: {}", e),
-        },
-    }
+    current_config.links_only = match FromStr::from_str(config_value.as_ref()) {
+        Ok(o)   => o,
+        Err(e)  => panic!("HELP: {}", e),
+    };
 
     save_config(current_config);
 }
@@ -117,10 +112,9 @@ fn load_config() -> Config {
     let mut boop = File::open(&config_file).unwrap();
     let mut output_from_config = String::new();
 
-    let content = match File::read_to_string(&mut boop, &mut output_from_config) {
-        Ok(o)   => o,
-        Err(e)  => panic!("HELP: {}", e),
-    };
+    if let Err(e) = File::read_to_string(&mut boop, &mut output_from_config) {
+        panic!("HELP: {}", e);
+    }
 
     json::decode::<Config>(&output_from_config).unwrap()
 }
@@ -135,7 +129,7 @@ fn save_config(new_config: Config) {
 
     let conf_file = File::create(&config_file);
 
-    conf_file.unwrap().write_all(json::encode(&new_config).unwrap().as_bytes());
+    drop(conf_file.unwrap().write_all(json::encode(&new_config).unwrap().as_bytes()));
 }
 
 fn list_config() {
@@ -261,19 +255,24 @@ fn upload_dr(args: Vec<String>, config: Config) {
 
     for d in directories {
         let path = Path::new(d);
-        let mut fls: Vec<_> = vec!();
+        let mut fls: Vec<_> = vec![];
 
         if path.is_dir() == true {
-            match fs::walk_dir(&path) {
-                Err(why) => println!("! {:?}", why.kind()),
-                Ok(paths) => for path in paths {
-                    fls.push(path.unwrap().path());
-                },
+            for p in WalkDir::new(&path) {
+                    fls.push(p.unwrap());
             }
 
             for x in fls {
-                let filename_processed = x.as_path().file_name().unwrap().to_str().unwrap().to_string();
-                let file_processed = x.as_path().to_str().unwrap().to_string();
+                let filename_processed = x.path()
+                                          .file_name()
+                                          .unwrap()
+                                          .to_str()
+                                          .unwrap()
+                                          .to_string();
+                let file_processed = x.path()
+                                      .to_str()
+                                      .unwrap()
+                                      .to_string();
 
                 let filename = format!("name={}", filename_processed);
                 let file = format!("file=@{}", file_processed);

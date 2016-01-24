@@ -6,3 +6,6 @@ authors = ["Dongmaster <dongmaster@users.noreply.github.com>"]
 
 [dependencies.rustc-serialize]
 git = "https://github.com/rust-lang/rustc-serialize.git"
+
+[dependencies]
+walkdir = "0.1"
