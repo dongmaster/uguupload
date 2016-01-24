@@ -5,16 +5,15 @@
  *  or http://opensource.org/licenses/BSD-2-Clause
  * */
 
-#![feature(fs_walk)]
-#![feature(path_ext)]
 
 extern crate rustc_serialize;
+extern crate walkdir;
 
 use std::env;
 use std::process;
 use std::fs;
 use std::path::Path;
-use std::fs::PathExt;
+use std::fs::Metadata;
 use std::fs::File;
 use std::io::Write;
 use std::io::Read;
@@ -22,7 +21,9 @@ use std::str::FromStr;
 
 use rustc_serialize::json;
 
-const URL : &'static str = "http://uguu.se/api.php?d=upload";
+use walkdir::WalkDir;
+
+const URL: &'static str = "http://uguu.se/api.php?d=upload";
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
@@ -30,7 +31,7 @@ pub struct Config {
 }
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
     let config = first_run();
 
@@ -261,19 +262,24 @@ fn upload_dr(args: Vec<String>, config: Config) {
 
     for d in directories {
         let path = Path::new(d);
-        let mut fls: Vec<_> = vec!();
+        let mut fls: Vec<_> = vec![];
 
         if path.is_dir() == true {
-            match fs::walk_dir(&path) {
-                Err(why) => println!("! {:?}", why.kind()),
-                Ok(paths) => for path in paths {
-                    fls.push(path.unwrap().path());
-                },
+            for p in WalkDir::new(&path) {
+                    fls.push(p.unwrap());
             }
 
             for x in fls {
-                let filename_processed = x.as_path().file_name().unwrap().to_str().unwrap().to_string();
-                let file_processed = x.as_path().to_str().unwrap().to_string();
+                let filename_processed = x.path()
+                                          .file_name()
+                                          .unwrap()
+                                          .to_str()
+                                          .unwrap()
+                                          .to_string();
+                let file_processed = x.path()
+                                      .to_str()
+                                      .unwrap()
+                                      .to_string();
 
                 let filename = format!("name={}", filename_processed);
                 let file = format!("file=@{}", file_processed);
