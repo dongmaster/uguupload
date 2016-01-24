@@ -13,7 +13,6 @@ use std::env;
 use std::process;
 use std::fs;
 use std::path::Path;
-use std::fs::Metadata;
 use std::fs::File;
 use std::io::Write;
 use std::io::Read;
@@ -48,8 +47,6 @@ fn first_run() -> Config {
 
     let config_dir = home_dir.join(".uguupload");
     let config_dir_path = Path::new(&config_dir);
-
-    let config_file = config_dir.join("config");
 
     if config_dir_path.is_dir() == false {
         // Create the initial config directory and then the config file
@@ -90,19 +87,16 @@ fn change_config(args: &Vec<String>) {
         panic!("Too many or too little arguments were supplied!");
     }
 
-    let ref config_parameter = args[2];
+    // args[2] is not needed
+
     let ref config_value = args[3];
 
     let mut current_config: Config = load_config();
 
-    let links_only = "links_only".to_string();
-
-    match config_value {
-        links_only  => current_config.links_only = match FromStr::from_str(config_value.as_ref()) {
-            Ok(o)   => o,
-            Err(e)  => panic!("HELP: {}", e),
-        },
-    }
+    current_config.links_only = match FromStr::from_str(config_value.as_ref()) {
+        Ok(o)   => o,
+        Err(e)  => panic!("HELP: {}", e),
+    };
 
     save_config(current_config);
 }
@@ -118,10 +112,9 @@ fn load_config() -> Config {
     let mut boop = File::open(&config_file).unwrap();
     let mut output_from_config = String::new();
 
-    let content = match File::read_to_string(&mut boop, &mut output_from_config) {
-        Ok(o)   => o,
-        Err(e)  => panic!("HELP: {}", e),
-    };
+    if let Err(e) = File::read_to_string(&mut boop, &mut output_from_config) {
+        panic!("HELP: {}", e);
+    }
 
     json::decode::<Config>(&output_from_config).unwrap()
 }
@@ -136,7 +129,7 @@ fn save_config(new_config: Config) {
 
     let conf_file = File::create(&config_file);
 
-    conf_file.unwrap().write_all(json::encode(&new_config).unwrap().as_bytes());
+    drop(conf_file.unwrap().write_all(json::encode(&new_config).unwrap().as_bytes()));
 }
 
 fn list_config() {
