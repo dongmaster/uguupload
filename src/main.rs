@@ -22,7 +22,7 @@ use rustc_serialize::json;
 
 use walkdir::WalkDir;
 
-const URL: &'static str = "http://uguu.se/api.php?d=upload";
+const URL: &'static str = "https://uguu.se/api.php?d=upload-tool";
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
